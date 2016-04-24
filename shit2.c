@@ -1,12 +1,29 @@
+/*
+  Sample solution to Assignment 1 Comp20005
+  Name       -       Yash Narwal
+  Stu_ID     -       612840
+  Email      -       ynarwal@student.unimelb.edu.au
+
+*/
+
 #include <stdio.h>
 #include <string.h>
-
 #include <stdlib.h>
 
-typedef enum  {
-  INT, DOUBLE
-} data_type;
+#define MAX_APARTS 100 /* Maximum number of apartments in the input file */
+#define MAX_ROOMS  100 /* Maximum number of rooms in an apartment */
 
+#define DIV "+-------+----------------+----------------+----------------+\n"
+#define HDR "| Apart |    Dry areas   |    Wet areas   |  Utility areas |\n"
+
+#define FILLER "---"
+
+#define UNIT   "meteres^2"
+
+/*
+  Different type of area, and
+  their proportion as one type
+*/
 struct area_proportion {
   double dry;
   double wet;
@@ -15,60 +32,51 @@ struct area_proportion {
   double per_wet;
   double per_utility;
 };
-// struct apartment{
-//   int rooms;
-//   double total_area;
-//   double rooms_widths[];
-//   double rooms_hights[];
-//   int codes[];
-//   int room_numbers[];
-// }
 
 double*
 combing_zones(double areas[], int rooms, int code_nums[], int room_nums[]);
 struct area_proportion
 area_proportion(double area_for_apart[],int rooms,int code_numbers[]);
 
-char* code_word(int code);
+char* code_word(int code , char* code_string);
 
 void
 print_apart_desc(double areas[], int rooms, int code_numbers[],
-                      int room_numbers[], double widths[], double heights[]);
+                 int room_numbers[], double widths[], double heights[]);
 
-void summary_table(double areas[],int apartment_nums[],int room_numbers[], int codes[],
-   int apartment_room[], int apartments, double widths[], double heights[] ) ;
-///Note : Update total as index
+void summary_table(double areas[],int apartment_nums[],
+                   int room_numbers[], int codes[],
+                   int apartment_room[], int apartments,
+                   double widths[], double heights[] ) ;
 
-int main(int argc, char *argv[])
+/*
+
+  main program
+    * read input steam
+    * print each apartment's summary
+    * print area proportion summary
+
+*/
+
+int
+main(int argc, char *argv[])
 {
 
   int apartment_number;
-
-  // scanf("%d", &apartment_number);
-
-  int code_number, room_number;
-  int code_numbers[100];
-  int room_numbers[100];
-  double widths[100];
-  double heights[100];
-  double areas[100];
-  int total = 0;
-  int i;
+  int code_number, room_number, total = 0, apartments = 0;
+  int code_numbers[MAX_ROOMS], room_numbers[MAX_ROOMS];
+  double widths[MAX_ROOMS], heights[MAX_ROOMS], areas[MAX_ROOMS];
   double width, height, total_area;
-  int apartments = 0;
   int apartment_numbers[100];
   int rooms_per_aprtment = 0;
   int apartment_room[100];
   double area_per_apartment = 0;
-  double areas_array[10];
-  // printf("Apartment %d\n----------\n", apartment_number);
-  // char c;
   char line[256];
 
 
   while(fgets(line, sizeof(line), stdin)){
-    if(sscanf(line, "%d %d %lf %lf", &code_number,&room_number, &width, &height) == 4){
-      // printf("Hello\n")
+    if(sscanf(line, "%d %d %lf %lf",
+              &code_number,&room_number, &width, &height) == 4){
       code_numbers[total] = code_number;
       room_numbers[total] = room_number;
       widths[total]  = width;
@@ -81,16 +89,13 @@ int main(int argc, char *argv[])
 
     }
     else{
-
       if(sscanf(line, "%d", &apartment_number) == 1){
       if(apartment_number != -1){
-         // printf("%d %d\n",total, rooms_per_aprtment);
          apartment_numbers[apartments] = apartment_number;
          apartments++;
       }
       if(apartment_number == -1){
          apartment_room[apartments-1] = rooms_per_aprtment;
-         areas_array[apartments-1] = area_per_apartment;
          area_per_apartment = 0;
          rooms_per_aprtment = 0;
       }
@@ -98,38 +103,27 @@ int main(int argc, char *argv[])
     }
   }
 
-  // struct area_proportion a = area_proportion(areas, 11, code_numbers);
-
-  // printf("%0.2lf %0.2lf \n", a.dry, a.per_dry );
-
-  // printf("%d \n",code_numbers[0] );
-
-  summary_table(areas, apartment_numbers,room_numbers,  code_numbers, apartment_room, apartments,
-  widths, heights);
+  summary_table(areas, apartment_numbers,room_numbers,  code_numbers,
+                apartment_room, apartments, widths, heights);
 
   return 0;
 
 }
+// ##########################################################
 
-// double areas[], int rooms, int code_numbers[],
-                      // int room_numbers[], double widths[], double heights[]
-
-void summary_table(double areas[],int apartment_nums[],int room_numbers[], int codes[],
-   int apartment_room[], int apartments, double widths[], double heights[] ) {
-   int i;
-   int index = 0;
-   int rooms;
-   int j,k = 0;
+void summary_table(double areas[],int apartment_nums[],
+                   int room_numbers[], int codes[],
+                   int apartment_room[], int apartments,
+                   double widths[], double heights[] ) {
+   int i, index = 0, rooms, j, k = 0;
+   char area_percentage[10];
    for(i = 0; i< apartments; i++){
-
      rooms = apartment_room[i];
      int new_codes[rooms];
-     double new_areas[rooms];
-     double new_widths[rooms];
-     double new_heights[rooms];
+     double new_areas[rooms], new_widths[rooms], new_heights[rooms];
      int new_rooms[rooms];
-     k = 0;
 
+     k = 0;
      for(j = index; j < index + rooms; j++){
        new_areas[k] = areas[j];
        new_codes[k] = codes[j];
@@ -138,17 +132,18 @@ void summary_table(double areas[],int apartment_nums[],int room_numbers[], int c
        new_rooms[k] = room_numbers[j];
        k++;
      }
-     print_apart_desc(new_areas, rooms, new_codes, new_rooms, new_widths, new_heights);
+     print_apart_desc(new_areas, rooms, new_codes,
+                      new_rooms, new_widths, new_heights);
 
      index += rooms;
    }
    printf("\n");
    index = 0;
    k = 0;
-   struct area_proportion a;
-   printf("+-------+----------------+----------------+----------------+\n");
-   printf("| Apart |    Dry areas   |    Wet areas   |  Utility areas |\n");
-   printf("+-------+----------------+----------------+----------------+\n");
+   struct area_proportion area_proportions;
+   printf(DIV);
+   printf(HDR);
+   printf(DIV);
   for(i = 0; i< apartments; i++){
     printf("|  %d  ",apartment_nums[i]);
     rooms = apartment_room[i];
@@ -160,53 +155,42 @@ void summary_table(double areas[],int apartment_nums[],int room_numbers[], int c
       new_codes[k] = codes[j];
       k++;
     }
-    a = area_proportion(new_areas, rooms, new_codes);
-    printf("|  %4.1lf  %03.1lf%%   ",a.dry, a.per_dry );
-    printf("|  %4.1lf  %03.1lf%%   ",a.wet, a.per_wet );
-    printf("|  %4.1lf  %03.1lf%%   |\n",a.utility, a.per_utility );
-    printf("+-------+----------------+----------------+----------------+\n");
+    area_proportions = area_proportion(new_areas, rooms, new_codes);
+    sprintf(area_percentage, "%0.1lf%%",area_proportions.per_dry);
+    printf("|%6.1lf  %5s   ",area_proportions.dry, area_percentage);
+    sprintf(area_percentage, "%0.1lf%%",area_proportions.per_wet);
+
+    printf("|%6.1lf  %5s   ",area_proportions.wet,area_percentage);
+    sprintf(area_percentage, "%0.1lf%%",area_proportions.per_utility);
+
+    printf("|%6.1lf  %5s   |\n",area_proportions.utility,area_percentage);
+    printf(DIV);
 
     index += rooms;
   }
 
   return;
 }
-void *copy_apartment(void* array,int start,  int end, int size, data_type type ){
-  int i = 0;
-  int j = 0;
-  if(type==0){
-    int* new_array =  malloc(end-start+1 * sizeof(int));
-    for(i = start; i < end; i++){
-      new_array[j] = ((int*)array)[i];
-      j++;
-    }
-    return new_array;
-  }
-  else if(type == 1){
-    double* new_array = malloc(end-start+1 * sizeof(double));
-    for(i = start; i < end; i++){
-      new_array[j] = ((double*)array)[i];
-      j++;
-    }
-    return new_array;
-  }
 
-
-}
-
-
+// #########################################################################
+/*
+  calculate area proportion for an apartment for each category
+*/
+// ########################################################################
 struct area_proportion
 area_proportion(double area_for_apart[],int rooms,int code_numbers[]){
   int i;
   double temp_dry = 0.0, temp_wet = 0.0 , temp_utility = 0.0;
   double total = 0;
   for(i = 0; i < rooms; i++){
-      if(code_numbers[i] == 1 || code_numbers[i] == 2 || code_numbers[i] == 3){
+      if(code_numbers[i] == 1 || code_numbers[i] == 2
+                              || code_numbers[i] == 3){
         //
         temp_dry += area_for_apart[i];
 
       }
-      else if(code_numbers[i] == 4 || code_numbers[i] == 5 || code_numbers[i] == 6){
+      else if(code_numbers[i] == 4 || code_numbers[i] == 5
+                                   || code_numbers[i] == 6){
         //
         temp_wet += area_for_apart[i];
       }
@@ -226,6 +210,17 @@ area_proportion(double area_for_apart[],int rooms,int code_numbers[]){
   proportions.per_utility = (temp_utility/total)*100;
   return proportions;
 }
+// ########################################################################
+
+/*
+  assign zeroes to the areas where room are of same type and same number
+  and return modifiled array of areas
+
+*/
+
+
+// ########################################################################
+
 double*
 combing_zones(double areas[], int rooms, int code_nums[], int room_nums[]){
   int i;
@@ -238,39 +233,59 @@ combing_zones(double areas[], int rooms, int code_nums[], int room_nums[]){
   }
   return areas;
 }
+// ########################################################################
 
 
+/*
+  @args
+    int areas[] - array of areas of rooms
+    int rooms - numbers of room in the apartment
+    int code_numbers[] - code numbers for an apartment
+    int room_numbers[] - room numbers for a code numbers
+    double widths[] - widths of all rooms
+    double heights[] -heights of all rooms
+  @output
+    print description for an apartment
+*/
 
+
+// ########################################################################
 void
 print_apart_desc(double areas[], int rooms, int code_numbers[],
-                      int room_numbers[], double widths[], double heights[])
+                 int room_numbers[], double widths[], double heights[])
   {
     areas = combing_zones(areas, rooms, code_numbers, room_numbers);
     int i;
     double total_area = 0;
-    char code_string[20];
+
     for(i = 0; i < rooms; i++){
-      strcpy(code_string, code_word(code_numbers[i]));
+      char* code_string = malloc(20 * sizeof(char));
+      code_word(code_numbers[i], code_string);
       if(areas[i] == 0){
-      printf("%-10s  %d  %0.2lf  %0.2lf  %s\n", code_string, room_numbers[i], widths[i], heights[i], "---");
+      printf("%-10s  %d  %0.2lf  %0.2lf  %s\n", code_string,
+      room_numbers[i], widths[i], heights[i], FILLER);
 
       }
       else{
-      printf("%-10s  %d  %0.2lf  %0.2lf  %0.2lf\n", code_string, room_numbers[i], widths[i], heights[i], areas[i]);
+      printf("%-10s  %d  %0.2lf  %0.2lf  %0.2lf\n", code_string,
+            room_numbers[i], widths[i], heights[i], areas[i]);
       }
+      free(code_string);
       total_area += areas[i];
     }
-
-    printf("%-26s %0.2lf %s\n","Total Area" , total_area, "meteres^2");
-    printf("\n");
+    printf("%-26s %0.2lf %s\n\n","Total Area" , total_area, UNIT);
   }
+// ########################################################################
+
+/*
+  takes code as an integer, and char pointer
+  return code_word accordingly
+
+*/
 
 
-
-
-
-char *code_word(int code){
-  char *code_string = malloc(20);
+// ########################################################################
+char *code_word(int code, char* code_string){
   switch (code) {
     case 1:
       strcpy(code_string, "Hallway");
@@ -303,3 +318,4 @@ char *code_word(int code){
   }
   return code_string;
 }
+// ########################################################################
